@@ -1,0 +1,12 @@
+{% extends "base.html" %}{% block title %}Barcode labels{% endblock %}{% block body %}
+<div class="no-print row"><h1>Barcode labels</h1><button class="btn primary" onclick="window.print()">Print</button></div>
+<p class="no-print muted">Tip: print at 100% scale, no headers/footers. Works with standard A4 sticker sheets or a label printer.</p>
+<div class="labels">
+{% for a in rows %}{% for i in range(copies) %}
+<div class="label"><div class="lname">{{ a.name[:38] }}</div><svg class="bcode" data-code="{{ a.asset_code }}"></svg>
+<div class="lsub">{{ a.location or 'School' }}</div></div>
+{% endfor %}{% endfor %}
+</div>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/JsBarcode.code128.min.js') }}"></script>
+<script>document.querySelectorAll('.bcode').forEach(s=>JsBarcode(s, s.dataset.code, {format:"CODE128", width:1.6, height:40, fontSize:12, margin:2}));</script>{% endblock %}

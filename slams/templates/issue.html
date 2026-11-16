@@ -1,0 +1,42 @@
+{% extends "base.html" %}{% block title %}Issue asset{% endblock %}{% block body %}
+<h1>Issue an asset</h1>
+<form method="post" class="card form" id="f">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Asset code <span class="muted">(scan the barcode, or type code / serial / ISBN)</span>
+    <input name="asset_code" id="code" value="{{ f.get('asset_code','') }}" autofocus autocomplete="off" required></label>
+  <div id="ainfo" class="info"></div>
+  <label>Recipient is a
+    <select name="recipient_type" id="rtype"><option value="student" {{ 'selected' if f.get('recipient_type')=='student' }}>Student</option>
+    <option value="staff" {{ 'selected' if f.get('recipient_type')=='staff' }}>Staff member</option></select></label>
+  <label>Admission / staff number<input name="recipient_no" id="rno" value="{{ f.get('recipient_no','') }}" autocomplete="off" required></label>
+  <div id="pinfo" class="info"></div>
+  <label>Quantity<input type="number" name="qty" id="qty" min="1" value="{{ f.get('qty',1) }}"></label>
+  <label>Issue date<input type="date" name="issue_date" value="{{ f.get('issue_date') or today() }}" required></label>
+  <label>Due date<input type="date" name="due_date" value="{{ f.get('due_date','') }}"></label>
+  <label>Notes<input name="notes" value="{{ f.get('notes','') }}"></label>
+  <button class="btn primary">Issue</button>
+</form>
+{% endblock %}
+{% block scripts %}<script>
+const $=id=>document.getElementById(id);
+// Scanners type the code then send Enter. Enter should look up the asset, not submit the form.
+async function lookAsset(){
+  const v=$('code').value.trim(); if(!v){$('ainfo').textContent='';return false;}
+  const r=await (await fetch('/api/asset?code='+encodeURIComponent(v))).json();
+  if(!r.id){$('ainfo').innerHTML='<span class="bad">No active asset matches.</span>';return false;}
+  $('ainfo').innerHTML=`<b>${r.name.replace(/</g,'&lt;')}</b> · ${r.category} · <b>${r.available}</b> available of ${r.quantity}`;
+  if(r.bulk=='0'){$('qty').value=1;$('qty').readOnly=true;}else{$('qty').readOnly=false;$('qty').max=r.available;}
+  return true;
+}
+async function lookPerson(){
+  const n=$('rno').value.trim(); if(!n){$('pinfo').textContent='';return false;}
+  const r=await (await fetch(`/api/person?type=${$('rtype').value}&number=${encodeURIComponent(n)}`)).json();
+  $('pinfo').innerHTML=r.id?`<b>${r.name.replace(/</g,'&lt;')}</b> <span class="muted">${(r.extra||'').replace(/</g,'&lt;')}</span>`:'<span class="bad">Not found — register under People first.</span>';
+  return !!r.id;
+}
+$('code').addEventListener('keydown',async e=>{ if(e.key==='Enter'){e.preventDefault(); if(await lookAsset()) $('rno').focus();}});
+$('code').addEventListener('blur',lookAsset);
+$('rno').addEventListener('keydown',async e=>{ if(e.key==='Enter'){e.preventDefault(); await lookPerson(); $('qty').focus();}});
+$('rno').addEventListener('blur',lookPerson); $('rtype').addEventListener('change',lookPerson);
+if($('code').value) lookAsset(); if($('rno').value) lookPerson();
+</script>{% endblock %}

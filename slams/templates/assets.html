@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block title %}Assets{% endblock %}{% block body %}
+<div class="row"><h1>Assets</h1><a class="btn primary" href="{{ url_for('asset_new') }}">+ Register asset</a></div>
+<form class="filters" method="get">
+  <input name="q" value="{{ q }}" placeholder="Name, code, serial, ISBN, author…" autofocus>
+  <select name="category"><option value="">All categories</option>
+    {% for c in cats %}<option value="{{ c.id }}" {{ 'selected' if cat|string == c.id|string }}>{{ c.name }}</option>{% endfor %}</select>
+  <select name="location"><option value="">All locations</option>
+    {% for l in locs %}<option value="{{ l.id }}" {{ 'selected' if loc|string == l.id|string }}>{{ l.name }}</option>{% endfor %}</select>
+  <select name="show"><option value="active">Active only</option><option value="all" {{ 'selected' if show=='all' }}>Include retired</option></select>
+  <button class="btn">Filter</button>
+</form>
+<form method="get" action="{{ url_for('labels') }}" target="_blank">
+<div class="tablewrap"><table>
+<tr><th><input type="checkbox" onclick="document.querySelectorAll('.pick').forEach(c=>c.checked=this.checked)"></th>
+<th>Code</th><th>Name</th><th>Category</th><th>Location</th><th>Total</th><th>Assigned</th><th>Damaged</th><th>Available</th></tr>
+{% for a in rows %}<tr class="{{ 'retired' if not a.active }}">
+<td><input class="pick" type="checkbox" name="id" value="{{ a.id }}"></td>
+<td><a href="{{ url_for('asset_detail', asset_id=a.id) }}">{{ a.asset_code }}</a></td>
+<td>{{ a.name }}{% if a.author_brand %}<div class="muted">{{ a.author_brand }}</div>{% endif %}</td>
+<td>{{ a.category }}</td><td>{{ a.location or '—' }}</td><td>{{ a.quantity }}</td><td>{{ a.assigned }}</td>
+<td>{{ a.damaged_qty }}</td><td><b class="{{ 'zero' if a.available <= 0 }}">{{ a.available }}</b></td></tr>
+{% else %}<tr><td colspan="9" class="muted">No assets found.</td></tr>{% endfor %}
+</table></div>
+<p>With selected: <label class="inline">copies each <input type="number" name="copies" value="1" min="1" max="50" style="width:4rem"></label>
+<button class="btn">🏷 Print barcode labels</button></p>
+</form>
+{% endblock %}

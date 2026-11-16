@@ -1,0 +1,6 @@
+{% extends "base.html" %}{% block title %}Reports{% endblock %}{% block body %}
+<h1>Reports</h1>
+<div class="grid2">{% for k,(t,h) in reports.items() %}
+<section class="card"><h2>{{ t }}</h2><p><a class="btn" href="{{ url_for('report', kind=k) }}">View / print</a>
+<a class="btn" href="{{ url_for('report', kind=k, format='csv') }}">Download CSV</a></p></section>{% endfor %}</div>
+{% endblock %}

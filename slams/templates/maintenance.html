@@ -1,0 +1,20 @@
+{% extends "base.html" %}{% block title %}Maintenance{% endblock %}{% block body %}
+<h1>Maintenance &amp; damaged assets</h1>
+<form method="post" class="card form inlineform">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <h2>Report damage</h2>
+  <label>Asset code<input name="asset_code" required autocomplete="off"></label>
+  <label>Units<input type="number" name="qty" min="1" value="1"></label>
+  <label>Problem<input name="issue" required></label>
+  <button class="btn primary">Flag as damaged</button>
+</form>
+<p><a href="{{ url_for('maintenance', status='Open') }}">Open</a> · <a href="{{ url_for('maintenance', status='all') }}">All records</a></p>
+<div class="tablewrap"><table><tr><th>Reported</th><th>Asset</th><th>Qty</th><th>Problem</th><th>Status</th><th></th></tr>
+{% for m in rows %}<tr><td>{{ m.reported_date }}</td><td>{{ m.asset_name }}<div class="muted">{{ m.asset_code }}</div></td><td>{{ m.qty }}</td><td>{{ m.issue }}</td>
+<td>{{ m.status }}{% if m.resolved_date %}<div class="muted">{{ m.resolved_date }}{% if m.cost %} · {{ '%.2f'|format(m.cost) }}{% endif %}</div>{% endif %}</td>
+<td>{% if m.status == 'Open' %}<form method="post" action="{{ url_for('maintenance_resolve', mid=m.id) }}" class="retform">
+<input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input name="cost" type="number" step="0.01" placeholder="Cost" style="width:6rem">
+<button class="btn small" name="outcome" value="Repaired">Repaired</button>
+<button class="btn small danger" name="outcome" value="Written off" onclick="return confirm('Remove these units from stock?')">Write off</button></form>{% endif %}</td></tr>
+{% else %}<tr><td colspan="6" class="muted">Nothing here.</td></tr>{% endfor %}</table></div>
+{% endblock %}

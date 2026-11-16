@@ -1,0 +1,16 @@
+{% extends "base.html" %}{% block title %}Returns{% endblock %}{% block body %}
+<h1>Returns</h1>
+<form class="filters" method="get"><input name="q" value="{{ q }}" autofocus autocomplete="off"
+ placeholder="Scan asset barcode, or type student/staff number or name…"><button class="btn">Find</button></form>
+<div class="tablewrap"><table>
+<tr><th>Asset</th><th>Borrower</th><th>Qty</th><th>Issued</th><th>Due</th><th>Record return</th></tr>
+{% for r in rows %}<tr>
+<td>{{ r.asset_name }}<div class="muted">{{ r.asset_code }}</div></td><td>{{ r.who }}</td><td>{{ r.qty }}</td><td>{{ r.issue_date }}</td>
+<td class="{{ 'zero' if r.due_date and r.due_date < today() }}">{{ r.due_date or '—' }}</td>
+<td><form method="post" action="{{ url_for('returns', q=q) }}" class="retform">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><input type="hidden" name="assignment_id" value="{{ r.id }}">
+  <label class="inline">Damaged units <input type="number" name="damaged_qty" min="0" max="{{ r.qty }}" value="0" style="width:4rem"></label>
+  <input name="notes" placeholder="Notes (optional)"><button class="btn primary small">Return</button></form></td></tr>
+{% else %}<tr><td colspan="6" class="muted">No outstanding assignments{{ ' match.' if q else '.' }}</td></tr>{% endfor %}
+</table></div>
+{% endblock %}

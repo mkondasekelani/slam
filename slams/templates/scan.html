@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% block title %}Camera scan{% endblock %}{% block body %}
+<h1>Scan with camera</h1>
+<div class="card center"><video id="v" playsinline muted style="max-width:100%;border-radius:8px"></video>
+<p id="msg" class="muted">Starting camera…</p></div>
+{% endblock %}
+{% block scripts %}<script>
+const msg=document.getElementById('msg'), v=document.getElementById('v');
+(async()=>{
+  if(!('BarcodeDetector' in window)){msg.textContent='This browser has no BarcodeDetector support (use Chrome on Android/desktop, or a USB scanner).';return;}
+  if(!navigator.mediaDevices){msg.textContent='Camera needs HTTPS or localhost. Use a USB scanner on plain http, or serve over HTTPS.';return;}
+  try{
+    const stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'}});
+    v.srcObject=stream; await v.play(); msg.textContent='Point at a barcode…';
+    const det=new BarcodeDetector({formats:['code_128','ean_13','ean_8','qr_code']});
+    const tick=async()=>{
+      try{const r=await det.detect(v); if(r.length){location.href='/assets?go=1&q='+encodeURIComponent(r[0].rawValue);return;}}catch(e){}
+      requestAnimationFrame(tick);};
+    tick();
+  }catch(e){msg.textContent='Camera unavailable: '+e.message;}
+})();
+</script>{% endblock %}

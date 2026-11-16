@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en"><head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block title %}SLAMS{% endblock %} · School Library &amp; Asset Management</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head><body>
+{% if session.uid %}
+<header class="top no-print">
+  <a class="brand" href="{{ url_for('dashboard') }}">SLAMS</a>
+  <nav>
+    <a href="{{ url_for('dashboard') }}">Dashboard</a>
+    <a href="{{ url_for('assets') }}">Assets</a>
+    <a href="{{ url_for('issue') }}">Issue</a>
+    <a href="{{ url_for('returns') }}">Returns</a>
+    <a href="{{ url_for('maintenance') }}">Maintenance</a>
+    <a href="{{ url_for('people') }}">People</a>
+    <a href="{{ url_for('reports') }}">Reports</a>
+    <a href="{{ url_for('logs') }}">Activity</a>
+    {% if session.role == 'admin' %}<a href="{{ url_for('users') }}">Users</a>{% endif %}
+  </nav>
+  <form class="quick" action="{{ url_for('assets') }}" method="get">
+    <input type="hidden" name="go" value="1">
+    <input name="q" placeholder="Scan or search…" autocomplete="off">
+    <a class="btn small" href="{{ url_for('scan') }}" title="Scan with camera">📷</a>
+  </form>
+  <form method="post" action="{{ url_for('logout') }}" class="who">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+    <a href="{{ url_for('account') }}">{{ session.name }}</a> <span class="muted">({{ session.role }})</span>
+    <button class="link">Log out</button>
+  </form>
+</header>
+{% endif %}
+<main>
+{% with msgs = get_flashed_messages(with_categories=true) %}
+  {% for cat, m in msgs %}<div class="flash {{ cat }}">{{ m }}</div>{% endfor %}
+{% endwith %}
+{% block body %}{% endblock %}
+</main>
+{% block scripts %}{% endblock %}
+</body></html>

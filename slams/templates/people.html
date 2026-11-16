@@ -1,0 +1,21 @@
+{% extends "base.html" %}{% block title %}People{% endblock %}{% block body %}
+<h1>Students &amp; staff</h1>
+<div class="grid2">
+<form method="post" class="card form"><input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><h2>Add person</h2>
+  <label>Type<select name="kind"><option value="student">Student</option><option value="staff">Staff</option></select></label>
+  <label>Admission / staff number<input name="number" required></label><label>Full name<input name="name" required></label>
+  <label>Class / department<input name="extra"></label><button class="btn primary">Add</button></form>
+<form method="post" action="{{ url_for('people_import') }}" enctype="multipart/form-data" class="card form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><h2>Import from CSV</h2>
+  <label>Type<select name="kind"><option value="student">Students</option><option value="staff">Staff</option></select></label>
+  <label>File<input type="file" name="file" accept=".csv" required></label>
+  <p class="muted">Columns: number, name, class or department. Duplicates are skipped.</p><button class="btn">Import</button></form>
+</div>
+<form class="filters" method="get"><input name="q" value="{{ q }}" placeholder="Search name or number"><button class="btn">Search</button></form>
+<div class="grid2">
+<section class="card"><h2>Students ({{ students|length }})</h2><table><tr><th>No.</th><th>Name</th><th>Class</th></tr>
+{% for s in students %}<tr><td>{{ s.admission_no }}</td><td>{{ s.name }}</td><td>{{ s.class_name }}</td></tr>{% else %}<tr><td colspan="3" class="muted">None.</td></tr>{% endfor %}</table></section>
+<section class="card"><h2>Staff ({{ staff|length }})</h2><table><tr><th>No.</th><th>Name</th><th>Department</th></tr>
+{% for s in staff %}<tr><td>{{ s.staff_no }}</td><td>{{ s.name }}</td><td>{{ s.department }}</td></tr>{% else %}<tr><td colspan="3" class="muted">None.</td></tr>{% endfor %}</table></section>
+</div>
+{% endblock %}

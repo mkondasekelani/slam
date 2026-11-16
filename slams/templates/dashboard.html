@@ -1,0 +1,22 @@
+{% extends "base.html" %}{% block title %}Dashboard{% endblock %}{% block body %}
+<h1>Dashboard</h1>
+<div class="stats">
+  <a class="stat" href="{{ url_for('assets') }}"><b>{{ s.total }}</b><span>Total units registered</span></a>
+  <a class="stat blue" href="{{ url_for('returns') }}"><b>{{ s.assigned }}</b><span>Currently assigned</span></a>
+  <a class="stat green" href="{{ url_for('assets') }}"><b>{{ s.available }}</b><span>Available</span></a>
+  <a class="stat red" href="{{ url_for('maintenance') }}"><b>{{ s.damaged }}</b><span>Damaged / out of service</span></a>
+  <a class="stat amber" href="{{ url_for('report', kind='overdue') }}"><b>{{ overdue }}</b><span>Overdue for return</span></a>
+</div>
+<div class="grid2">
+  <section class="card"><h2>Recent transactions</h2>
+    <table><tr><th>Date</th><th></th><th>Asset</th><th>Qty</th><th>Person</th></tr>
+    {% for r in recent %}<tr><td>{{ r.dt }}</td><td><span class="tag {{ r.kind|lower }}">{{ r.kind }}</span></td>
+      <td>{{ r.asset }} <span class="muted">{{ r.asset_code }}</span></td><td>{{ r.qty }}</td><td>{{ r.who }}</td></tr>
+    {% else %}<tr><td colspan="5" class="muted">Nothing yet. <a href="{{ url_for('assets') }}">Register assets</a> to get started.</td></tr>{% endfor %}
+    </table></section>
+  <section class="card"><h2>By category</h2>
+    <table><tr><th>Category</th><th>Total</th><th>Assigned</th><th>Available</th></tr>
+    {% for c in by_cat %}<tr><td>{{ c.category }}</td><td>{{ c.total }}</td><td>{{ c.assigned }}</td><td>{{ c.available }}</td></tr>
+    {% else %}<tr><td colspan="4" class="muted">No assets yet.</td></tr>{% endfor %}</table></section>
+</div>
+{% endblock %}

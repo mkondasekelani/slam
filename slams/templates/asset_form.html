@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% block title %}{{ 'Register' if new else 'Edit' }} asset{% endblock %}{% block body %}
+<h1>{{ 'Register asset' if new else 'Edit ' ~ a.asset_code }}</h1>
+<form method="post" class="card form">
+  <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+  <label>Name *<input name="name" value="{{ a.name or '' }}" required autofocus></label>
+  <label>Category *<select name="category_id" id="cat" {{ 'disabled' if not new }}>
+    {% for c in cats %}<option value="{{ c.id }}" data-bulk="{{ c.bulk }}" {{ 'selected' if a.category_id == c.id }}>{{ c.name }}</option>{% endfor %}</select></label>
+  {% if not new %}<input type="hidden" name="category_id" value="{{ a.category_id }}">{% endif %}
+  <label>Location<select name="location_id"><option value="">—</option>
+    {% for l in locs %}<option value="{{ l.id }}" {{ 'selected' if a.location_id == l.id }}>{{ l.name }}</option>{% endfor %}</select></label>
+  <label>Author / Brand<input name="author_brand" value="{{ a.author_brand or '' }}"></label>
+  <label>Serial number <span class="muted">(computers &amp; equipment)</span><input name="serial_number" value="{{ a.serial_number or '' }}"></label>
+  <label>ISBN <span class="muted">(books)</span><input name="isbn" value="{{ a.isbn or '' }}"></label>
+  <label id="qtyrow">Quantity <span class="muted">(copies of this title in stock)</span>
+    <input type="number" name="quantity" min="0" value="{{ a.quantity or 1 }}"></label>
+  <label>Condition<select name="condition">{% for c in CONDITIONS %}<option {{ 'selected' if a.condition == c }}>{{ c }}</option>{% endfor %}</select></label>
+  <label>Notes<textarea name="notes" rows="3">{{ a.notes or '' }}</textarea></label>
+  <p class="muted">Books: one record with a quantity. Equipment &amp; computers: one record per physical unit, so each has its own serial number and barcode.</p>
+  <button class="btn primary">Save</button>
+  <a class="btn" href="{{ url_for('assets') if new else url_for('asset_detail', asset_id=a.id) }}">Cancel</a>
+</form>
+{% endblock %}
+{% block scripts %}<script>
+const cat=document.getElementById('cat'), q=document.getElementById('qtyrow');
+function sync(){ q.style.display = cat.selectedOptions[0].dataset.bulk==='1' ? '' : 'none'; }
+cat.addEventListener('change',sync); sync();
+</script>{% endblock %}

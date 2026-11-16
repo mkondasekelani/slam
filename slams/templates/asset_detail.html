@@ -1,0 +1,32 @@
+{% extends "base.html" %}{% block title %}{{ a.name }}{% endblock %}{% block body %}
+<div class="row"><h1>{{ a.name }} {% if not a.active %}<span class="tag retired">Retired</span>{% endif %}</h1>
+  <div><a class="btn" href="{{ url_for('asset_edit', asset_id=a.id) }}">Edit</a>
+  <a class="btn" target="_blank" href="{{ url_for('labels', id=a.id) }}">🏷 Print label</a>
+  {% if session.role == 'admin' %}
+  <form method="post" action="{{ url_for('asset_retire', asset_id=a.id) }}" class="inline" onsubmit="return confirm('Continue?')">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"><button class="btn danger">{{ 'Retire' if a.active else 'Restore' }}</button></form>{% endif %}</div></div>
+<div class="grid2">
+<section class="card"><table class="kv">
+  <tr><th>Asset code</th><td><b>{{ a.asset_code }}</b></td></tr><tr><th>Category</th><td>{{ a.category }}</td></tr>
+  <tr><th>Location</th><td>{{ a.location or '—' }}</td></tr>
+  {% if a.author_brand %}<tr><th>Author / brand</th><td>{{ a.author_brand }}</td></tr>{% endif %}
+  {% if a.serial_number %}<tr><th>Serial</th><td>{{ a.serial_number }}</td></tr>{% endif %}
+  {% if a.isbn %}<tr><th>ISBN</th><td>{{ a.isbn }}</td></tr>{% endif %}
+  <tr><th>Condition</th><td>{{ a.condition }}</td></tr>
+  <tr><th>Units</th><td>{{ a.quantity }} total · {{ a.assigned }} assigned · {{ a.damaged_qty }} damaged · <b>{{ a.available }} available</b></td></tr>
+  {% if a.notes %}<tr><th>Notes</th><td>{{ a.notes }}</td></tr>{% endif %}</table></section>
+<section class="card center"><svg id="bc"></svg></section>
+</div>
+<section class="card"><h2>Currently assigned</h2><table><tr><th>To</th><th>Qty</th><th>Issued</th><th>Due</th></tr>
+{% for r in open_ %}<tr><td>{{ r.who }}</td><td>{{ r.qty }}</td><td>{{ r.issue_date }}</td>
+<td class="{{ 'zero' if r.due_date and r.due_date < today() }}">{{ r.due_date or '—' }}</td></tr>
+{% else %}<tr><td colspan="4" class="muted">Not assigned to anyone.</td></tr>{% endfor %}</table></section>
+<section class="card"><h2>Assignment history</h2><table><tr><th>To</th><th>Qty</th><th>Issued</th><th>Returned</th><th>Condition</th></tr>
+{% for r in hist %}<tr><td>{{ r.who }}</td><td>{{ r.qty }}</td><td>{{ r.issue_date }}</td><td>{{ r.return_date }}</td><td>{{ r.rcond }}</td></tr>
+{% else %}<tr><td colspan="5" class="muted">No history.</td></tr>{% endfor %}</table></section>
+<section class="card"><h2>Maintenance</h2><table><tr><th>Reported</th><th>Qty</th><th>Issue</th><th>Status</th></tr>
+{% for m in maint %}<tr><td>{{ m.reported_date }}</td><td>{{ m.qty }}</td><td>{{ m.issue }}</td><td>{{ m.status }}</td></tr>
+{% else %}<tr><td colspan="4" class="muted">No maintenance records.</td></tr>{% endfor %}</table></section>
+{% endblock %}
+{% block scripts %}<script src="{{ url_for('static', filename='js/JsBarcode.code128.min.js') }}"></script>
+<script>JsBarcode("#bc", {{ a.asset_code|tojson }}, {format:"CODE128", width:2, height:70, displayValue:true});</script>{% endblock %}

@@ -1,0 +1,7 @@
+{% extends "base.html" %}{% block title %}Activity log{% endblock %}{% block body %}
+<h1>Activity log</h1>
+<form class="filters" method="get"><input name="q" value="{{ q }}" placeholder="Filter by action, detail or user"><button class="btn">Filter</button></form>
+<div class="tablewrap"><table><tr><th>Time</th><th>User</th><th>Action</th><th>Details</th></tr>
+{% for l in rows %}<tr><td>{{ l.ts }}</td><td>{{ l.username }}</td><td>{{ l.action }}</td><td>{{ l.details }}</td></tr>
+{% else %}<tr><td colspan="4" class="muted">No activity.</td></tr>{% endfor %}</table></div>
+{% endblock %}
